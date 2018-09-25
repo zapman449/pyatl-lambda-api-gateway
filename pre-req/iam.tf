@@ -47,15 +47,15 @@ data "aws_iam_policy_document" "hello_world_iam_policy" {
   }
 }
 
+resource "aws_iam_role" "hello_world_lambda_role" {
+  name = "tf.hello_world.lambda.role"
+
+  assume_role_policy = "${data.aws_iam_policy_document.lambda_assume_role.json}"
+}
+
 resource "aws_iam_role_policy" "hello_world_lambda_policy" {
   name = "tf.hello_world_lambda_rights"
   role = "${aws_iam_role.hello_world_lambda_role.id}"
 
   policy = "${data.aws_iam_policy_document.hello_world_iam_policy.json}"
-}
-
-resource "aws_iam_role" "hello_world_lambda_role" {
-  name = "tf.hello_world.lambda.role"
-
-  assume_role_policy = "${data.aws_iam_policy_document.lambda_assume_role.json}"
 }

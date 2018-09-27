@@ -4,3 +4,4 @@ creds.artifact
 */terraform.tfstate
 */terraform.tfstate.backup
 */.terraform
+*/*.zip

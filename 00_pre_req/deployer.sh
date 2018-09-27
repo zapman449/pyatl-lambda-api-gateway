@@ -17,7 +17,9 @@ aws_default_region = "${AWS_DEFAULT_REGION}"
 
 HEREDOC
 
-terraform init
+if [[ ! -d .terraform/plugins ]]; then
+    terraform init
+fi
 terraform validate
 terraform plan -out ./terraform.tfplan
 terraform apply -auto-approve ./terraform.tfplan

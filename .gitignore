@@ -5,3 +5,4 @@ creds.artifact
 */terraform.tfstate.backup
 */.terraform
 */*.zip
+.swp

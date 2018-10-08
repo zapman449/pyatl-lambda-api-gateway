@@ -31,7 +31,7 @@ data "aws_iam_policy_document" "lambda_assume_role" {
 }
 
 data "aws_iam_policy_document" "incrementer_iam_policy" {
-    statement {
+  statement {
     sid    = "lambdaWriteLogs"
     effect = "Allow"
 
@@ -86,4 +86,57 @@ resource "aws_iam_role_policy" "incrementer_lambda_policy" {
   role = "${aws_iam_role.incrementer_lambda_role.id}"
 
   policy = "${data.aws_iam_policy_document.incrementer_iam_policy.json}"
+}
+
+###################################################################################################
+
+data "aws_iam_policy_document" "apigw_assume_role" {
+  statement {
+    sid    = "APIGWAssumeRole"
+    effect = "Allow"
+
+    actions = [
+      "sts:AssumeRole",
+    ]
+
+    principals {
+      type = "Service"
+
+      identifiers = [
+        "apigateway.amazonaws.com",
+      ]
+    }
+  }
+}
+
+data "aws_iam_policy_document" "apigw_iam_policy" {
+  statement {
+    sid    = "APIGWWriteLogs"
+    effect = "Allow"
+
+    actions = [
+      "logs:CreateLogGroup",
+      "logs:CreateLogStream",
+      "logs:DescribeLogGroups",
+      "logs:DescribeLogStreams",
+      "logs:PutLogEvents",
+      "logs:GetLogEvents",
+      "logs:FilterLogEvents",
+    ]
+
+    resources = ["*"]
+  }
+}
+
+resource "aws_iam_role" "apigw_role" {
+  name = "tf.apigw.role"
+
+  assume_role_policy = "${data.aws_iam_policy_document.apigw_assume_role.json}"
+}
+
+resource "aws_iam_role_policy" "apigw_policy" {
+  name = "tf.apigw_cwl_rights"
+  role = "${aws_iam_role.apigw_role.id}"
+
+  policy = "${data.aws_iam_policy_document.apigw_iam_policy.json}"
 }

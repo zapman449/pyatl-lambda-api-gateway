@@ -18,7 +18,7 @@ def ddb_connect():
     return ddb, tables
 
 
-def valid_ddb_response_q(response):
+def __valid_ddb_response_q(response):
     if 'ResponseMetadata' in response:
         if 'HTTPStatusCode' in response['ResponseMetadata']:
             if response['ResponseMetadata']['HTTPStatusCode'] == 200:
@@ -32,17 +32,25 @@ def conditional_get_count(CountName, tables):
             'CountName': CountName
         }
     )
-    if not valid_ddb_response_q(response):
+    if not __valid_ddb_response_q(response):
         msg = "got error querying incrementation table: {}".format(repr(response))
         logging.error(msg)
         raise Exception(msg)
     elif 'Item' in response:
         count_value = json.loads(response['Item']['CountValue'])
         logging.warning("count_value found.  Looks like: {c}".format(c=repr(count_value)))
-        return True, count_value
+        return count_value
     else:
-        logging.warning("no count_value found in conditional_get. Returning None")
-        return False, None
+        logging.warning("no count_value found in conditional_get. Returning zero")
+        return {'count': 0}
+
+
+def increment_count(count_value):
+    try:
+        count_value['count'] = count_value['count'] + 1
+    except KeyError:
+        logging.exception("in increment_count, count_value should have key of count, but does not.")
+        raise
 
 
 def set_count(CountName, count_value, tables):
@@ -52,7 +60,7 @@ def set_count(CountName, count_value, tables):
             "CountValue": json.dumps(count_value)
         }
     )
-    if valid_ddb_response_q(response):
+    if __valid_ddb_response_q(response):
         return True
     else:
         msg = "failed to put new count"
@@ -65,9 +73,6 @@ def parse_event(event, expected_method):
     if 'CountName' in event:
         result = event['CountName']
     elif 'resource' in event and 'path' in event and 'httpMethod' in event:
-        # logging.warning("DEBUG: event->resource is {}".format(event['resource']))
-        # logging.warning("DEBUG: event->httpMethod is {}".format(event['httpMethod']))
-        # logging.warning("DEBUG: event->path is {}".format(event['path']))
         if event['resource'] == "/counts/{CountName}":
             if event['httpMethod'] == expected_method:
                 path_words = event['path'].split('/')

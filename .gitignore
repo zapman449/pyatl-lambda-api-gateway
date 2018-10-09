@@ -6,3 +6,4 @@ creds.artifact
 */.terraform
 */*.zip
 .swp
+02_increment_counter/tf_api_gw.tf

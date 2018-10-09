@@ -29,3 +29,5 @@ aws logs describe-log-groups | jq -r '.logGroups[].logGroupName' | while read lg
     echo "setting log group retention to 1 day for logGroup ${lgn}"
     aws logs put-retention-policy --log-group-name ${lgn} --retention-in-days 1
 done
+
+rm -f *.zip

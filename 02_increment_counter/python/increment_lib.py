@@ -33,6 +33,8 @@ def __valid_ddb_response_q(response):
     return False
 
 
+# TODO: Change the data model to leaverage DynamoDB's atomic update feature:
+# https://linuxacademy.com/blog/amazon-web-services-2/dynamodb-atomic-counters/
 def conditional_get_count(CountName, tables):
     """Retrieves the CountName from DynamoDB if it exists.  If it does not, return a zero value"""
     response = tables['incrementation'].get_item(

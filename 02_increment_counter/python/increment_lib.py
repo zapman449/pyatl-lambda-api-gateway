@@ -1,5 +1,9 @@
 #!/usr/bin/env python
 
+"""
+Library to support the incrementer lambda work
+"""
+
 import json
 import logging
 import os
@@ -9,6 +13,8 @@ import boto3
 
 
 def ddb_connect():
+    """connect to the correct dynamoDB tables. Returns the dynamoDB client, and the table object in a
+    dictionary of relevant table objects"""
     ddb = boto3.resource('dynamodb')
     tables = dict()
     table_name = os.environ.get("INCREMENTATION_TABLE_NAME")
@@ -19,6 +25,7 @@ def ddb_connect():
 
 
 def __valid_ddb_response_q(response):
+    """private function to validate a given DynamoDB query response."""
     if 'ResponseMetadata' in response:
         if 'HTTPStatusCode' in response['ResponseMetadata']:
             if response['ResponseMetadata']['HTTPStatusCode'] == 200:
@@ -27,6 +34,7 @@ def __valid_ddb_response_q(response):
 
 
 def conditional_get_count(CountName, tables):
+    """Retrieves the CountName from DynamoDB if it exists.  If it does not, return a zero value"""
     response = tables['incrementation'].get_item(
         Key={
             'CountName': CountName
@@ -46,6 +54,7 @@ def conditional_get_count(CountName, tables):
 
 
 def increment_count(count_value):
+    """Take a count and increment it."""
     try:
         count_value['count'] = count_value['count'] + 1
     except KeyError:
@@ -54,6 +63,7 @@ def increment_count(count_value):
 
 
 def set_count(CountName, count_value, tables):
+    """Sets a given count_value for CountName"""
     response = tables['incrementation'].put_item(
         Item={
             "CountName": CountName,
@@ -69,6 +79,12 @@ def set_count(CountName, count_value, tables):
 
 
 def parse_event(event, expected_method):
+    """Parses the event object passed in via Lambda invocation or API Gateway.  If its a Lambda inviocation,
+    expects to find a CountName key and use that.  If not, it does some sanity checking for 3 keys set by
+    API Gateway: resource, path, and httpMethod.  If those 3 look right, it extracts the CountName from the
+    event['path']."""
+    # TODO: If you're using this for real, this needs to be a lot more defensive, particularly the path_words
+    # and result line.
     result = None
     if 'CountName' in event:
         result = event['CountName']
@@ -81,6 +97,7 @@ def parse_event(event, expected_method):
 
 
 def make_return(msg, code):
+    """Create a standardized returnable dictionary."""
     result = {
         "statusCode": int(code),
         "body": str(msg),

@@ -96,7 +96,7 @@ resource "aws_lambda_permission" "apigw_increment" {
 }
 
 resource "aws_cloudwatch_log_group" "incrementer_lg" {
-  name              = "/jprice/incrementer_logs"
+  name              = "/apigw/incrementer_logs"
   retention_in_days = 1
 
   tags {
@@ -118,41 +118,25 @@ resource "aws_api_gateway_deployment" "incrementer" {
   stage_name  = "prod"
 }
 
-resource "aws_api_gateway_stage" "incrementer" {
-  stage_name    = "dev-logs"
-  rest_api_id   = "${aws_api_gateway_rest_api.incrementer.id}"
-  deployment_id = "${aws_api_gateway_deployment.incrementer.id}"
-
-  access_log_settings {
-    destination_arn = "${aws_cloudwatch_log_group.incrementer_lg.arn}"
-    format          = "$context.identity.sourceIp $context.identity.caller $context.identity.user [$context.requestTime] \"$context.httpMethod $context.resourcePath $context.protocol\" $context.status $context.responseLength $context.requestId"
-  }
-}
-
-resource "aws_api_gateway_usage_plan" "incrementer_plan" {
-  name = "incrementer_usage_plan"
-
-  api_stages {
-    api_id = "${aws_api_gateway_rest_api.incrementer.id}"
-    stage  = "${aws_api_gateway_stage.incrementer.stage_name}"
-  }
-
-  api_stages {
-    api_id = "${aws_api_gateway_rest_api.incrementer.id}"
-    stage  = "${aws_api_gateway_deployment.incrementer.stage_name}"
-  }
-
-  quota_settings {
-    limit  = 100
-    offset = 0
-    period = "DAY"
-  }
-
-  throttle_settings {
-    burst_limit = 5
-    rate_limit  = 10
-  }
-}
+//resource "aws_api_gateway_usage_plan" "incrementer_plan" {
+//  name = "incrementer_usage_plan"
+//
+//  api_stages {
+//    api_id = "${aws_api_gateway_rest_api.incrementer.id}"
+//    stage  = "${aws_api_gateway_deployment.incrementer.stage_name}"
+//  }
+//
+//  quota_settings {
+//    limit  = 100
+//    offset = 0
+//    period = "DAY"
+//  }
+//
+//  throttle_settings {
+//    burst_limit = 5
+//    rate_limit  = 10
+//  }
+//}
 
 resource "aws_api_gateway_account" "incrementer" {
   cloudwatch_role_arn = "${aws_iam_role.apigw_role.arn}"
@@ -160,8 +144,4 @@ resource "aws_api_gateway_account" "incrementer" {
 
 output "incrementer_base_url" {
   value = "${aws_api_gateway_deployment.incrementer.invoke_url}"
-}
-
-output "incrementer_dev_stage_url" {
-  value = "${aws_api_gateway_stage.incrementer.invoke_url}"
 }

@@ -11,6 +11,7 @@ provider "aws" {
   version    = "~> 1.30"
 }
 
+# Policy for Lambda to assume role.  Enables the other rights later
 data "aws_iam_policy_document" "lambda_assume_role" {
   statement {
     sid    = "instanceAssumeRole"
@@ -30,7 +31,9 @@ data "aws_iam_policy_document" "lambda_assume_role" {
   }
 }
 
+# Policy for incrementer lambda functions.
 data "aws_iam_policy_document" "incrementer_iam_policy" {
+  # Standard lambda rights for CloudWatch Events and Logs
   statement {
     sid    = "lambdaWriteLogs"
     effect = "Allow"
@@ -46,6 +49,7 @@ data "aws_iam_policy_document" "incrementer_iam_policy" {
     resources = ["*"]
   }
 
+  # Rights to Scan, Get, Put and Update the incrementation DDB table
   statement {
     sid    = "lambdaToDynamoDB"
     effect = "Allow"
@@ -63,6 +67,7 @@ data "aws_iam_policy_document" "incrementer_iam_policy" {
     ]
   }
 
+  # Rights to list all DDB tables
   statement {
     sid    = "lambdaToDynamoDBlist"
     effect = "Allow"
@@ -75,12 +80,14 @@ data "aws_iam_policy_document" "incrementer_iam_policy" {
   }
 }
 
+# Create a role for all the above
 resource "aws_iam_role" "incrementer_lambda_role" {
   name = "tf.incrementer.lambda.role"
 
   assume_role_policy = "${data.aws_iam_policy_document.lambda_assume_role.json}"
 }
 
+# Inject all the above rights into the role
 resource "aws_iam_role_policy" "incrementer_lambda_policy" {
   name = "tf.incrementer_lambda_rights"
   role = "${aws_iam_role.incrementer_lambda_role.id}"
@@ -90,6 +97,7 @@ resource "aws_iam_role_policy" "incrementer_lambda_policy" {
 
 ###################################################################################################
 
+# API Gateway assume role policy
 data "aws_iam_policy_document" "apigw_assume_role" {
   statement {
     sid    = "APIGWAssumeRole"
@@ -109,6 +117,7 @@ data "aws_iam_policy_document" "apigw_assume_role" {
   }
 }
 
+# Standard API Gateway -> CloudWatch Logs policy to get access logs
 data "aws_iam_policy_document" "apigw_iam_policy" {
   statement {
     sid    = "APIGWWriteLogs"
@@ -128,12 +137,14 @@ data "aws_iam_policy_document" "apigw_iam_policy" {
   }
 }
 
+# Role for apigw use
 resource "aws_iam_role" "apigw_role" {
   name = "tf.apigw.role"
 
   assume_role_policy = "${data.aws_iam_policy_document.apigw_assume_role.json}"
 }
 
+# inject the rights from above into the apigw role
 resource "aws_iam_role_policy" "apigw_policy" {
   name = "tf.apigw_cwl_rights"
   role = "${aws_iam_role.apigw_role.id}"

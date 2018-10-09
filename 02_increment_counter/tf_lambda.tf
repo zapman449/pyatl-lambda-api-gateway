@@ -1,3 +1,8 @@
+# Terraform can create the zip file for Lambda.  This works great if you just need Boto3 and standard lib
+# stuff.  If you're getting more complicated, you probably want to build the zip file outside of Terraform
+# and tell Terraform to leverage it.
+# I also can get away with a single zip file for both lambdas.  There's a point where that's not wise or
+# practical any more.
 data "archive_file" "incrementer" {
   type        = "zip"
   output_path = "${path.module}/incrementer.zip"
@@ -18,6 +23,7 @@ data "archive_file" "incrementer" {
   }
 }
 
+# The POST lambda function
 resource "aws_lambda_function" "increment_count" {
   filename         = "${data.archive_file.incrementer.output_path}"
   function_name    = "increment_count"
@@ -35,6 +41,7 @@ resource "aws_lambda_function" "increment_count" {
   }
 }
 
+# The GET lambda function
 resource "aws_lambda_function" "get_count" {
   filename         = "${data.archive_file.incrementer.output_path}"
   function_name    = "get_count"

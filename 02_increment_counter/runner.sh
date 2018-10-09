@@ -25,7 +25,7 @@ echo "{
 
 aws lambda invoke \
     --invocation-type RequestResponse \
-    --function-name "incrementer" \
+    --function-name "increment_count" \
     --region "${AWS_DEFAULT_REGION}" \
     --log-type "${LOG_TYPE}" \
     --payload file://"${lambda_input}" \

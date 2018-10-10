@@ -31,7 +31,7 @@ data "aws_iam_policy_document" "lambda_assume_role" {
 }
 
 data "aws_iam_policy_document" "hello_world_iam_policy" {
-    statement {
+  statement {
     sid    = "lambdaWriteLogs"
     effect = "Allow"
 

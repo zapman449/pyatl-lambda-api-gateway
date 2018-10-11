@@ -159,6 +159,7 @@ resource "aws_api_gateway_deployment" "incrementer" {
 //}
 
 # TF magic to coerce AWS API Gateway for the whole account to have a cloudwatch logs role.
+# This enables api gateway access logging
 resource "aws_api_gateway_account" "incrementer" {
   cloudwatch_role_arn = "${aws_iam_role.apigw_role.arn}"
 }

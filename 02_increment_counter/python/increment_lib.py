@@ -85,8 +85,7 @@ def parse_event(event, expected_method):
     expects to find a CountName key and use that.  If not, it does some sanity checking for 3 keys set by
     API Gateway: resource, path, and httpMethod.  If those 3 look right, it extracts the CountName from the
     event['path']."""
-    # TODO: If you're using this for real, this needs to be a lot more defensive, particularly the path_words
-    # and result line.
+    # TODO: If you're using this for real, this needs to be a lot more defensive
     result = None
     if 'CountName' in event:
         result = event['CountName']
